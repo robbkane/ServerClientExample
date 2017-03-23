@@ -15,7 +15,7 @@
 #
 
 # Name we'll use for the client.
-CLIENT_NAME		= async_client
+CLIENT_NAME		= httpclient
 
 # The current SDK.
 SDK_ROOT        = /opt/appdynamics-sdk-native
@@ -62,7 +62,7 @@ all: $(CLIENT_NAME)
 
 .PHONY: clean it
 
-$(CLIENT_NAME): $(CLIENT_NAME).cpp Makefile
+$(CLIENT_NAME): async_client.cpp Makefile
 	@echo building $(CLIENT_NAME) 
 	rm -f $@
 	$(CCP) $(CPPFLAGS) $(SDK_INC) $(BOOST_INC) $< $(BOOST_LIBS) $(SDK_LIB) $(PTHREAD_LIBS) $(LDFLAGS) -o $@

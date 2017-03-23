@@ -14,7 +14,7 @@
 # appdynamics SDK       [ sudo tar xvf  xxxx                                                  ]
 #
 
-SERVER_NAME     =  test_server
+SERVER_NAME     =  httpserver
 
 SERVER_SRC      =  connection.cpp  
 SERVER_SRC      += connection_manager.cpp  
