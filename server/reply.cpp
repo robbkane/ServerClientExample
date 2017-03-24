@@ -9,6 +9,7 @@
 //
 
 #include "reply.hpp"
+#include <iostream>
 #include <string>
 #include <boost/lexical_cast.hpp>
 
@@ -103,6 +104,7 @@ const char crlf[] = { '\r', '\n' };
 std::vector<boost::asio::const_buffer> reply::to_buffers()
 {
   std::vector<boost::asio::const_buffer> buffers;
+std::cerr << "Responding with:" << std::endl << "   status: " << status << std::endl;   //RKane
   buffers.push_back(status_strings::to_buffer(status));
   for (std::size_t i = 0; i < headers.size(); ++i)
   {
@@ -111,9 +113,11 @@ std::vector<boost::asio::const_buffer> reply::to_buffers()
     buffers.push_back(boost::asio::buffer(misc_strings::name_value_separator));
     buffers.push_back(boost::asio::buffer(h.value));
     buffers.push_back(boost::asio::buffer(misc_strings::crlf));
+std::cerr << "   name: " << h.name << "   value: " << h.value << std::endl;   //RKane
   }
   buffers.push_back(boost::asio::buffer(misc_strings::crlf));
   buffers.push_back(boost::asio::buffer(content));
+// std::cerr << "   content: " << content << std::endl;   //RKane
   return buffers;
 }
 

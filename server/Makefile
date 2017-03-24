@@ -74,8 +74,7 @@ BOOST_SYS_LIB   =  -lboost_system
 
 # GNU
 CCP         = g++
-CPPFLAGS    = -g
-CFLAGS      = -g -std=c++11
+CPPFLAGS    = -g -std=c++11
 INC         = -I.
 
 # libs
@@ -85,10 +84,6 @@ all: $(SERVER_NAME)
 
 .PHONY: clean
 
-%.hpp.gch: %.hpp
-	@echo building $@
-	$(CCP) $(CPPFLAGS) $(BOOST_INC) -c $^
-
 %.o: %.cpp
 	@echo building $@
 	$(CCP) $(CPPFLAGS) $(INC) $(SDK_INC) -c $^
@@ -97,7 +92,6 @@ $(SERVER_NAME): $(SERVER_SRC) $(SERVER_INC) $(SERVER_OBJ) Makefile
 	@echo building $@
 	rm -f $@
 	$(CCP) $(CPPFLAGS) $(INC) $(SDK_INC) $(BOOST_INC) $(LDFLAGS) $(SERVER_OBJ) $(BOOST_LIBS) $(SDK_LIB) $(PTHREAD_LIBS) $(BOOST_SYS_LIB) -o $@
-	rm -f $(SERVER_OBJ) $(SERVER_GCH)
 
 clean:
 	rm -f $(SERVER_NAME) $(SERVER_OBJ) $(SERVER_GCH)

@@ -1,5 +1,5 @@
 //
-// async_client.cpp
+// client.cpp
 // ~~~~~~~~~~~~~~~~
 //
 // Copyright (c) 2003-2011 Christopher M. Kohlhoff (chris at kohlhoff dot com)
@@ -8,10 +8,12 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <chrono>
 #include <iostream>
 #include <istream>
 #include <ostream>
 #include <string>
+#include <thread>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
@@ -182,19 +184,27 @@ private:
 
 int main(int argc, char* argv[])
 {
+  int nod = 10;
+
   try
   {
     if (argc != 4)
     {
-      std::cout << "Usage: async_client <server> <port> <path>\n";
+      std::cout << "Usage: httpclient <server> <port> <path>\n";
       std::cout << "Example:\n";
-      std::cout << "  async_client www.boost.org 80 /LICENSE_1_0.txt\n";
+      std::cout << "  httpclient www.boost.org 80 /LICENSE_1_0.txt\n";
       return 1;
     }
 
-    boost::asio::io_service io_service;
-    client c(io_service, argv[1], argv[2], argv[3]);
-    io_service.run();
+    while (1)
+    {
+      std::cout << "About to request \"" << argv[3] << "\" on server: " << argv[1] << " port: " << argv[2] << std::endl;
+      boost::asio::io_service io_service;
+      client c(io_service, argv[1], argv[2], argv[3]);
+      io_service.run();
+      std::cout << "Sleeping for " << nod << " seconds..." << std::endl;
+      std::this_thread::sleep_for (std::chrono::seconds(nod));
+    }
   }
   catch (std::exception& e)
   {

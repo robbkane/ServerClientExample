@@ -1,2 +1,8 @@
-async_client/httpclient
+.gitignore
+client/httpclient
 server/httpserver
+testdir/httpclient
+testdir/httpserver
+*/*.swp
+*/*.o
+*.swp

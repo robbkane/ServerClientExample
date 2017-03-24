@@ -48,8 +48,7 @@ BOOST_LIBS      += $(BOOST_LIB_DIR)/libboost_chrono.a
 
 # GNU
 CCP         = g++
-CPPFLAGS    = -g
-CFLAGS      = -g -std=c++11
+CPPFLAGS    = -g -std=c++11
 
 # includes
 BOOST_INC   = -I$(BOOST_INC_DIR)
@@ -62,7 +61,7 @@ all: $(CLIENT_NAME)
 
 .PHONY: clean it
 
-$(CLIENT_NAME): async_client.cpp Makefile
+$(CLIENT_NAME): client.cpp Makefile
 	@echo building $(CLIENT_NAME) 
 	rm -f $@
 	$(CCP) $(CPPFLAGS) $(SDK_INC) $(BOOST_INC) $< $(BOOST_LIBS) $(SDK_LIB) $(PTHREAD_LIBS) $(LDFLAGS) -o $@
