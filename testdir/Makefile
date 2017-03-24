@@ -1,11 +1,23 @@
-# tab stops set to 4
+# Makefile for testing the client/server C++ SDK instrumentation logic.
 #
+
+HOST       = 127.0.0.1
+PORT       = 10517
+SAMPLE     = sample.html
 
 SERVER_DIR = ../server
 CLIENT_DIR = ../client
 
 SERVER_EXE = httpserver
 CLIENT_EXE = httpclient
+
+CLIENT_OUT = "$(CLIENT_EXE).out"
+SERVER_OUT = "$(SERVER_EXE).out"
+
+# The current SDK.
+SDK_ROOT        = /opt/appdynamics-sdk-native
+SDK_INC_DIR     = $(SDK_ROOT)/sdk_lib
+SDK_LIB_DIR     = $(SDK_ROOT)/sdk_lib/lib
 
 .PHONY: all clean
 
@@ -42,3 +54,7 @@ clean:
 		echo "ERROR: $(CLIENT_EXE) exists but is not a symbolic link.";\
 		exit 1;\
 	fi; fi;
+
+it: $(SERVER_EXE) $(CLIENT_EXE)
+	LD_LIBRARY_PATH=$(SDK_LIB_DIR) ./$(CLIENT_EXE) $(HOST) $(PORT) $(SAMPLE) > $(CLIENT_OUT) &
+	tail -100 $(CLIENT_OUT)

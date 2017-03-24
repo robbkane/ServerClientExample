@@ -16,6 +16,7 @@
 #include <thread>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include "appdynamics.h"
 
 using boost::asio::ip::tcp;
 
@@ -184,7 +185,48 @@ private:
 
 int main(int argc, char* argv[])
 {
-  int nod = 10;
+  int             winks = 40;
+  int             initRC;
+  appd_config     cfg;
+
+  const char APP_NAME[] = "CES_89333";
+  const char TIER_NAME[] = "CES_89333_T1";
+  const char NODE_NAME[] = "CES_89333_T1_N1";
+  const char CONTROLLER_HOST[] = "osxltrkane";
+  const int CONTROLLER_PORT = 8090;
+  const char CONTROLLER_ACCOUNT[] = "customer1";
+  const char CONTROLLER_ACCESS_KEY[] = "";
+  const int CONTROLLER_USE_SSL = 0; 
+#ifdef _WIN32
+  const int PROXY_CTRL_PORT = 10101;
+  const int PROXY_REQ_PORT = 10102;
+  const int PROXY_REP_PORT = 10103;
+#endif
+  
+  appd_config_init(&cfg);
+
+  cfg.app_name = (char*)APP_NAME;
+  cfg.tier_name = (char*)TIER_NAME;
+  cfg.node_name = (char*)NODE_NAME;
+  cfg.controller.host = (char*)CONTROLLER_HOST;
+  cfg.controller.port = CONTROLLER_PORT;
+  cfg.controller.account = (char*)CONTROLLER_ACCOUNT;
+  cfg.controller.access_key = (char*)CONTROLLER_ACCESS_KEY;
+  cfg.controller.use_ssl = CONTROLLER_USE_SSL;
+  cfg.init_timeout_ms = 60000;
+#ifdef _WIN32
+  cfg.appd_proxy_config.tcp_control_port = PROXY_CTRL_PORT;
+  cfg.appd_proxy_config.tcp_request_port = PROXY_REQ_PORT;
+  cfg.appd_proxy_config.tcp_reporting_port = PROXY_REP_PORT;
+#endif
+ 
+  initRC = appd_sdk_init(&cfg);
+
+  if (initRC)
+  {
+    std::cerr <<  "Error: sdk init: " << initRC << ". Check that proxy is still running.";
+    return 1;
+  }
 
   try
   {
@@ -202,14 +244,16 @@ int main(int argc, char* argv[])
       boost::asio::io_service io_service;
       client c(io_service, argv[1], argv[2], argv[3]);
       io_service.run();
-      std::cout << "Sleeping for " << nod << " seconds..." << std::endl;
-      std::this_thread::sleep_for (std::chrono::seconds(nod));
+      std::cout << "Sleeping for " << winks << " seconds..." << std::endl;
+      std::this_thread::sleep_for (std::chrono::seconds(winks));
     }
   }
   catch (std::exception& e)
   {
     std::cout << "Exception: " << e.what() << "\n";
   }
+
+  appd_sdk_term();
 
   return 0;
 }

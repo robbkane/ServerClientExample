@@ -17,12 +17,11 @@
 # Name we'll use for the client.
 CLIENT_NAME		= httpclient
 
-# The current SDK.
 SDK_ROOT        = /opt/appdynamics-sdk-native
 SDK_INC_DIR     = $(SDK_ROOT)/sdk_lib
 SDK_LIB_DIR     = $(SDK_ROOT)/sdk_lib/lib
-SDK_LIB         = 
-#SDK_LIB        = $(SDK_LIB_DIR)/libappdynamics_native_sdk.so
+SDK_LIB         = $(SDK_LIB_DIR)/libappdynamics_native_sdk.so
+
 SDK_LOAD_PATH   = LD_LIBRARY_PATH=$(SDK_LIB_DIR)
 
 # LINUX specific library locations.
@@ -64,7 +63,7 @@ all: $(CLIENT_NAME)
 $(CLIENT_NAME): client.cpp Makefile
 	@echo building $(CLIENT_NAME) 
 	rm -f $@
-	$(CCP) $(CPPFLAGS) $(SDK_INC) $(BOOST_INC) $< $(BOOST_LIBS) $(SDK_LIB) $(PTHREAD_LIBS) $(LDFLAGS) -o $@
+	$(CCP) $(CPPFLAGS) $(SDK_INC) $(BOOST_INC) $< $(SDK_LIB) $(BOOST_LIBS) $(PTHREAD_LIBS) $(LDFLAGS) -o $@
 
 clean:
 	rm -f $(CLIENT_NAME)
