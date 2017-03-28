@@ -58,7 +58,7 @@ LDFLAGS     = -lz -lcrypt -lrt
 
 all: $(CLIENT_NAME) 
 
-.PHONY: clean it
+.PHONY: clean
 
 $(CLIENT_NAME): client.cpp Makefile
 	@echo building $(CLIENT_NAME) 
@@ -67,7 +67,3 @@ $(CLIENT_NAME): client.cpp Makefile
 
 clean:
 	rm -f $(CLIENT_NAME)
-
-it:
-	@echo not starting client...
-	@echo exiting makefile

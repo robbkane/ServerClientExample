@@ -2,7 +2,9 @@
 client/httpclient
 server/httpserver
 testdir/httpclient
+testdir/httpclient.out
 testdir/httpserver
+testdir/httpserver.out
 */*.swp
 */*.o
 *.swp

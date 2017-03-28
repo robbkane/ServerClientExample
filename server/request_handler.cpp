@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <iostream>
 #include <boost/lexical_cast.hpp>
 #include "mime_types.hpp"
 #include "reply.hpp"
@@ -34,6 +35,8 @@ void request_handler::handle_request(const request& req, reply& rep)
     rep = reply::stock_reply(reply::bad_request);
     return;
   }
+
+  std::cout << "Got request: " << request_path << std::endl;   //RKane
 
   // Request path must be absolute and not contain "..".
   if (request_path.empty() || request_path[0] != '/'

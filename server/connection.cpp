@@ -13,6 +13,7 @@
 #include <boost/bind.hpp>
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
+#include <iostream>
 
 namespace http {
 namespace server {

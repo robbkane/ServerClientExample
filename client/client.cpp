@@ -189,13 +189,13 @@ int main(int argc, char* argv[])
   int             initRC;
   appd_config     cfg;
 
-  const char APP_NAME[] = "CES_89333";
-  const char TIER_NAME[] = "CES_89333_T1";
-  const char NODE_NAME[] = "CES_89333_T1_N1";
+  const char APP_NAME[] = "CES_89333_Client";
+  const char TIER_NAME[] = "CES_89333_Client_T1";
+  const char NODE_NAME[] = "CES_89333_Client_T1_N1";
   const char CONTROLLER_HOST[] = "osxltrkane";
   const int CONTROLLER_PORT = 8090;
   const char CONTROLLER_ACCOUNT[] = "customer1";
-  const char CONTROLLER_ACCESS_KEY[] = "";
+  const char CONTROLLER_ACCESS_KEY[] = "17a9d78c-dec5-419d-8530-d7bcbc3187f7";
   const int CONTROLLER_USE_SSL = 0; 
 #ifdef _WIN32
   const int PROXY_CTRL_PORT = 10101;
@@ -238,12 +238,21 @@ int main(int argc, char* argv[])
       return 1;
     }
 
+    const std::string x(argv[3]);
+
     while (1)
     {
+      appd::sdk::BT bt(x);
+
       std::cout << "About to request \"" << argv[3] << "\" on server: " << argv[1] << " port: " << argv[2] << std::endl;
+
+      { // Exit call block...
       boost::asio::io_service io_service;
       client c(io_service, argv[1], argv[2], argv[3]);
+      appd::sdk::ExitCall ec(bt, x);
       io_service.run();
+      }
+
       std::cout << "Sleeping for " << winks << " seconds..." << std::endl;
       std::this_thread::sleep_for (std::chrono::seconds(winks));
     }
