@@ -57,6 +57,10 @@ stop:
 	@echo "Make stop completed."
 	@echo 
 
+status:
+	@cd $(TEST_DIR) && make status
+	@echo 
+
 howto:
 	@echo "Explanation goes here"
 	@echo 

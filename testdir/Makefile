@@ -38,7 +38,7 @@ SDK_LIB_DIR     = ${SDK_ROOT}/sdk_lib/lib
 SDK_LIB	        = ${SDK_LIB_DIR}/libappdynamics_native_sdk.so
 SDK_LOAD_PATH   = LD_LIBRARY_PATH=${SDK_LIB_DIR}
 
-.PHONY: all check_pids check_server_pid check_client_pid check_links check_server_link check_client_link clean_links clean_server_link clean_client_link clean links server_links client_links start server_start client_start stop server_stop client_stop
+.PHONY: all check_pids check_server_pid check_client_pid check_links check_server_link check_client_link clean_links clean_server_link clean_client_link clean links server_links client_links start server_start client_start stop server_stop client_stop status server_status client_status
 
 all: links
 	@echo "make all completed."
@@ -55,13 +55,13 @@ client_link: check_client_link
 clean: clean_server_link clean_client_link
 	@echo "Completed clean."
 
-clean_server_link: check_server_link
+clean_server_link: check_server_link check_server_pid
 	@if [ -h ${SERVER_NAME} ]; then\
 		echo "rm -f ${SERVER_NAME}";\
 		rm -f ${SERVER_NAME};\
 	fi;
 
-clean_client_link: check_client_link
+clean_client_link: check_client_link check_client_pid
 	@if [ -h ${CLIENT_NAME} ]; then\
 		echo "rm -f ${CLIENT_NAME}";\
 		rm -f ${CLIENT_NAME};\
@@ -119,8 +119,6 @@ check_client_link:
 		exit 1;\
 	fi
 
-# Check that the isn't already a pid file for either the client or server.
-# If there is, check that it has only 1 line with only 1 word, and that it contains a valid pid.
 check_pids: check_server_pid check_client_pid
 
 check_server_pid: 
@@ -153,7 +151,7 @@ check_server_pid:
 		echo "${BOLD_RED}Aborting process ${SERVER_PID}, and removing file \"${SERVER_PID_FILE}\".${RESET_TERM}";\
 		kill ${SERVER_PID};\
 		rm -f ${SERVER_PID_FILE};\
-		echo "Proess and/or file eliminated.";\
+		echo "Process and/or pid file eliminated.";\
 		echo;\
 	fi;\
 	if [ -n "`ps -ef | grep -v grep | grep "${SERVER_NAME}" | grep "${HOST}" | grep "${PORT}"`" ]; then\
@@ -211,7 +209,7 @@ check_client_pid:
 		echo "${BOLD_RED}Aborting process ${CLIENT_PID}, and removing file \"${CLIENT_PID_FILE}\".${RESET_TERM}";\
 		kill ${CLIENT_PID};\
 		rm -f ${CLIENT_PID_FILE};\
-		echo "Proess and/or file eliminated.";\
+		echo "Process and/or pid file eliminated.";\
 		echo;\
 	fi;\
 	if [ -n "`ps -ef | grep -v grep | grep "${CLIENT_NAME}" | grep "${HOST}" | grep "${PORT}"`" ]; then\
@@ -239,3 +237,25 @@ check_client_pid:
 		echo "Completed check_client_pid";\
 	fi;
 
+status:
+	@if [ -n "`ps -ef | grep -v grep | grep ${SERVER_NAME} | grep ${HOST} | grep ${PORT}`" ] ||\
+	    [ -n "`ps -ef | grep -v grep | grep ${CLIENT_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
+		echo;\
+		ps -ef | head -1;\
+		if [ -n "`ps -ef | grep -v grep | grep ${SERVER_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
+			ps -ef | grep -v grep | grep "${SERVER_NAME}" | grep "${HOST}" | grep "${PORT}";\
+		fi;\
+		if [ -n "`ps -ef | grep -v grep | grep ${CLIENT_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
+			ps -ef | grep -v grep | grep "${CLIENT_NAME}" | grep "${HOST}" | grep "${PORT}";\
+		fi;\
+	else\
+		echo;\
+		echo "No Client or Server processes were running.";\
+		echo;\
+	fi;
+	@echo
+
+junk:
+		if [ -n "`ps -ef | grep -v grep | grep ${CLIENT_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\ 
+			ps -ef | grep -v grep | grep "${CLIENT_NAME}" | grep "${HOST}" | grep "${PORT}";\
+		fi;\
