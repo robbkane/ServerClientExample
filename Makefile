@@ -12,49 +12,49 @@ TEST_DIR   = $(TOP_DIR)/testdir
 SERVER_EXE = httpserver
 CLIENT_EXE = httpclient
 
-.PHONY: all links server client clean howto it
+.PHONY: all server client testdir clean it howto 
 
-all: clean server client links
+all: server client testdir
 	@echo "make all completed successfully"
-	@echo 
-
-links:
-	@echo "Building links in \" "$(TEST_DIR) "\""
-	@cd $(TEST_DIR) && make all
-	@echo "completed successfully"
-	@echo 
 
 server:
-	@echo Building $(SERVER_EXE) in $(SERVER_DIR)
-	@cd $(SERVER_DIR) && make all
-	@cd $(TEST_DIR)   && make server
-	@echo "completed successfully"
+	@cd $(SERVER_DIR) && make
+	@echo "Make server completed."
 	@echo 
 
 client: 
-	@echo Building $(CLIENT_EXE) in $(CLIENT_DIR)
-	@cd $(CLIENT_DIR) && make all
-	@cd $(TEST_DIR)   && make client
-	@echo "completed successfully"
+	@cd $(CLIENT_DIR) && make 
+	@echo "Make client completed."
+	@echo 
+
+testdir:
+	@cd $(TEST_DIR) && make
+	@echo "Make testdir completed."
 	@echo 
 
 clean:
 	@cd $(SERVER_DIR) && make clean
 	@cd $(CLIENT_DIR) && make clean
 	@cd $(TEST_DIR)   && make clean
-	@echo "completed successfully"
+	@echo "Make clean completed."
 	@echo 
 
 it:
-	@cd $(SERVER_DIR) && make clean
-	@cd $(CLIENT_DIR) && make clean
-	@cd $(TEST_DIR)   && make clean
 	@cd $(SERVER_DIR) && make 
 	@cd $(CLIENT_DIR) && make
-	@cd $(TEST_DIR)   && make all
-	@cd $(TEST_DIR)   && make server_start
-	@cd $(TEST_DIR)   && make client_start
-	@echo "${TEST_DIR}: completed it."
+	@cd $(TEST_DIR)   && make
+	@cd $(TEST_DIR)   && make start
+	@echo "Make it completed."
+	@echo 
+
+start:
+	@cd $(TEST_DIR) && make start
+	@echo "Make start completed."
+	@echo 
+
+stop:
+	@cd $(TEST_DIR) && make stop
+	@echo "Make stop completed."
 	@echo 
 
 howto:

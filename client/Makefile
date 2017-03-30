@@ -56,9 +56,9 @@ SDK_INC     = -I$(SDK_INC_DIR)
 # libs
 LDFLAGS     = -lz -lcrypt -lrt
 
-all: $(CLIENT_NAME) 
+.PHONY: clean all
 
-.PHONY: clean
+all: $(CLIENT_NAME)
 
 $(CLIENT_NAME): client.cpp Makefile
 	@echo building $(CLIENT_NAME) 

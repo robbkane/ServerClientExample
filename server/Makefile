@@ -80,9 +80,9 @@ INC         = -I.
 # libs
 LDFLAGS     = -lz -lcrypt -lrt
 
-all: $(SERVER_NAME)
-
 .PHONY: clean
+
+all: $(SERVER_NAME)
 
 %.o: %.cpp
 	@echo building $@

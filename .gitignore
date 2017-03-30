@@ -3,8 +3,10 @@ client/httpclient
 server/httpserver
 testdir/httpclient
 testdir/httpclient.out
+testdir/httpclient_pid
 testdir/httpserver
 testdir/httpserver.out
+testdir/httpserver_pid
 */*.swp
 */*.o
 *.swp
