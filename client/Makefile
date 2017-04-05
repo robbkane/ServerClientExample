@@ -14,56 +14,50 @@
 # appdynamics SDK       [ sudo tar xvf                                                        ]
 #
 
-# Name we'll use for the client.
-CLIENT_NAME		= httpclient
-
-SDK_ROOT        = /opt/appdynamics-sdk-native
-SDK_INC_DIR     = $(SDK_ROOT)/sdk_lib
-SDK_LIB_DIR     = $(SDK_ROOT)/sdk_lib/lib
-SDK_LIB         = $(SDK_LIB_DIR)/libappdynamics_native_sdk.so
-
-SDK_LOAD_PATH   = LD_LIBRARY_PATH=$(SDK_LIB_DIR)
-
 # LINUX specific library locations.
 # Ubuntu/Debian                 LIB_DIR = /usr/lib/x86_64-linux-gnu
 # Centos/Redhat/Fedora          LIB_DIR = /usr/lib64
 LIB_DIR         = /usr/lib/x86_64-linux-gnu
 
 # POSIX compliant abstraction layer.
-PTHREAD_LIB_DIR = $(LIB_DIR)
-PTHREAD_LIBS    = $(PTHREAD_LIB_DIR)/libpthread.so
+PTHREAD_LIB_DIR = ${LIB_DIR}
+PTHREAD_LIBS    = ${PTHREAD_LIB_DIR}/libpthread.so
 
 # BOOST files.
 BOOST_ROOT      = /usr/local/boost
-BOOST_INC_DIR   = $(BOOST_ROOT)/include
-BOOST_LIB_DIR   = $(BOOST_ROOT)/lib
+BOOST_INC_DIR   = ${BOOST_ROOT}/include
+BOOST_LIB_DIR   = ${BOOST_ROOT}/lib
 
-BOOST_LIBS      =  $(BOOST_LIB_DIR)/libboost_thread.a
-BOOST_LIBS      += $(BOOST_LIB_DIR)/libboost_system.a
-BOOST_LIBS      += $(BOOST_LIB_DIR)/libboost_program_options.a
-BOOST_LIBS      += $(BOOST_LIB_DIR)/libboost_date_time.a
-BOOST_LIBS      += $(BOOST_LIB_DIR)/libboost_timer.a
-BOOST_LIBS      += $(BOOST_LIB_DIR)/libboost_chrono.a
+BOOST_LIBS      =  ${BOOST_LIB_DIR}/libboost_thread.a
+BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_system.a
+BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_program_options.a
+BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_date_time.a
+BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_timer.a
+BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_chrono.a
 
 # GNU
 CCP         = g++
 CPPFLAGS    = -g -std=c++11
 
 # includes
-BOOST_INC   = -I$(BOOST_INC_DIR)
-SDK_INC     = -I$(SDK_INC_DIR)
+BOOST_INC   = -I${BOOST_INC_DIR}
+SDK_INC     = -I${SDK_INC_DIR}
 
 # libs
 LDFLAGS     = -lz -lcrypt -lrt
 
 .PHONY: clean all
 
-all: $(CLIENT_NAME)
+all: ${CLIENT_EXE}
 
-$(CLIENT_NAME): client.cpp Makefile
-	@echo building $(CLIENT_NAME) 
+${CLIENT_EXE}: client.cpp Makefile
+	@echo building ${CLIENT_EXE} 
 	rm -f $@
-	$(CCP) $(CPPFLAGS) $(SDK_INC) $(BOOST_INC) $< $(SDK_LIB) $(BOOST_LIBS) $(PTHREAD_LIBS) $(LDFLAGS) -o $@
+	${CCP} ${CPPFLAGS} ${SDK_INC} ${BOOST_INC} $< ${SDK_LIB} ${BOOST_LIBS} ${PTHREAD_LIBS} ${LDFLAGS} -o $@
 
 clean:
-	rm -f $(CLIENT_NAME)
+	rm -f ${CLIENT_EXE}
+
+junk:
+	@echo TOP_DIR is ${TOP_DIR}
+	@echo JUNK is ${JUNK}

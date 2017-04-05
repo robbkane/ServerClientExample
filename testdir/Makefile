@@ -1,42 +1,5 @@
 # Makefile for testing the client/server C++ SDK instrumentation logic.
 #
-BOLD_RED        = \033[1m\033[31m
-BOLD_GREEN      = \033[1m\033[32m
-BOLD_YELLOW     = \033[1m\033[33m
-RESET_TERM      = \033[0m
-
-HOST            = 127.0.0.1
-PORT            = 10517
-SAMPLE          = sample.html
-
-SERVER_NAME     = httpserver
-CLIENT_NAME     = httpclient
-TEST_NAME       = testdir
-
-BASE_DIR        = ..
-SERVER_DIR      = ${BASE_DIR}/server
-CLIENT_DIR      = ${BASE_DIR}/client
-TEST_DIR        = ${BASE_DIR}/testdir
-HTTP_DIR        = /
-
-SERVER_EXE      = ${SERVER_DIR}/${SERVER_NAME}
-CLIENT_EXE      = ${CLIENT_DIR}/${CLIENT_NAME}
-
-SERVER_PID_FILE = ${TEST_DIR}/${SERVER_NAME}_pid
-CLIENT_PID_FILE = ${TEST_DIR}/${CLIENT_NAME}_pid
-
-SERVER_PID      = `cat ${SERVER_PID_FILE}`
-CLIENT_PID      = `cat ${CLIENT_PID_FILE}`
-
-SERVER_OUT      = "${TEST_DIR}/${SERVER_NAME}.out"
-CLIENT_OUT      = "${TEST_DIR}/${CLIENT_NAME}.out"
-
-# The current SDK.
-SDK_ROOT	= /opt/appdynamics-sdk-native
-SDK_INC_DIR     = ${SDK_ROOT}/sdk_lib
-SDK_LIB_DIR     = ${SDK_ROOT}/sdk_lib/lib
-SDK_LIB	        = ${SDK_LIB_DIR}/libappdynamics_native_sdk.so
-SDK_LOAD_PATH   = LD_LIBRARY_PATH=${SDK_LIB_DIR}
 
 .PHONY: all check_pids check_server_pid check_client_pid check_links check_server_link check_client_link clean_links clean_server_link clean_client_link clean links server_links client_links start server_start client_start stop server_stop client_stop status server_status client_status
 
@@ -47,24 +10,24 @@ links: clean server_link client_link
 	@echo "make links completed."
 
 server_link: check_server_link
-	ln -s ${SERVER_EXE} ${SERVER_NAME}
+	ln -s ${SERVER_EXE} ${SERVER_EXE_NAME}
 
 client_link: check_client_link
-	ln -s ${CLIENT_EXE} ${CLIENT_NAME}
+	ln -s ${CLIENT_EXE} ${CLIENT_EXE_NAME}
 
 clean: clean_server_link clean_client_link
 	@echo "Completed clean."
 
 clean_server_link: check_server_link check_server_pid
-	@if [ -h ${SERVER_NAME} ]; then\
-		echo "rm -f ${SERVER_NAME}";\
-		rm -f ${SERVER_NAME};\
+	@if [ -h ${SERVER_EXE_NAME} ]; then\
+		echo "rm -f ${SERVER_EXE_NAME}";\
+		rm -f ${SERVER_EXE_NAME};\
 	fi;
 
 clean_client_link: check_client_link check_client_pid
-	@if [ -h ${CLIENT_NAME} ]; then\
-		echo "rm -f ${CLIENT_NAME}";\
-		rm -f ${CLIENT_NAME};\
+	@if [ -h ${CLIENT_EXE_NAME} ]; then\
+		echo "rm -f ${CLIENT_EXE_NAME}";\
+		rm -f ${CLIENT_EXE_NAME};\
 	fi;
 
 start: server_start client_start
@@ -72,25 +35,25 @@ start: server_start client_start
 
 server_start: check_server_link check_server_pid
 	@echo
-	@echo "Starting ${SERVER_NAME} using host ${HOST}, port ${PORT}, and HTTP root directory \"${HTTP_DIR}\"" > ${SERVER_OUT}
-	@echo "Executed on "`date` >> ${SERVER_OUT}
-	${SDK_LOAD_PATH} ./${SERVER_NAME} ${HOST} ${PORT} ${HTTP_DIR} 2>&1 >> ${SERVER_OUT} &
-	@ps -ef | grep -v grep | grep "${SERVER_NAME}" | grep "${HOST}" | grep "${PORT}" | awk ' { print $$2 } ' | head -1 > ${SERVER_PID_FILE}
+	@echo "Starting ${SERVER_EXE_NAME} using host ${HOST}, port ${PORT}, and HTTP root directory \"${HTTP_DIR}\"" > ${SERVER_LOG}
+	@echo "Executed on "`date` >> ${SERVER_LOG}
+	${SDK_LOAD_PATH} ./${SERVER_EXE_NAME} ${HOST} ${PORT} ${HTTP_DIR} 2>&1 >> ${SERVER_LOG} &
+	@ps -ef | grep -v grep | grep "${SERVER_EXE_NAME}" | grep "${HOST}" | grep "${PORT}" | awk ' { print $$2 } ' | head -1 > ${SERVER_PID_FILE}
 	@echo "Server started with pid: `cat ${SERVER_PID_FILE}`"
-	@echo "Sending output to: ${SERVER_OUT}"
-	@echo "Use this command to tail the output: ${BOLD_GREEN} tail -100f ${SERVER_OUT} &${RESET_TERM}"
+	@echo "Sending output to: ${SERVER_LOG}"
+	@echo "Use this command to tail the output: ${BOLD_GREEN} tail -100f ${SERVER_LOG} &${RESET_TERM}"
 	@echo
 
 
 client_start: check_client_link check_client_pid
 	@echo
-	@echo "Starting ${CLIENT_NAME} using host ${HOST}, port ${PORT}, and file ${SAMPLE}" > ${CLIENT_OUT}
-	@echo "Executed on "`date` >> ${CLIENT_OUT}
-	${SDK_LOAD_PATH} ./${CLIENT_NAME} ${HOST} ${PORT} ${SAMPLE} 2>&1 >> ${CLIENT_OUT} &
-	@ps -ef | grep -v grep | grep "${CLIENT_NAME}" | grep "${HOST}" | grep "${PORT}" | awk ' { print $$2 } ' | head -1 > ${CLIENT_PID_FILE}
+	@echo "Starting ${CLIENT_EXE_NAME} using host ${HOST}, port ${PORT}, and file ${SAMPLE}" > ${CLIENT_LOG}
+	@echo "Executed on "`date` >> ${CLIENT_LOG}
+	${SDK_LOAD_PATH} ./${CLIENT_EXE_NAME} ${HOST} ${PORT} ${SAMPLE} 2>&1 >> ${CLIENT_LOG} &
+	@ps -ef | grep -v grep | grep "${CLIENT_EXE_NAME}" | grep "${HOST}" | grep "${PORT}" | awk ' { print $$2 } ' | head -1 > ${CLIENT_PID_FILE}
 	@echo "Client started with pid: `cat ${CLIENT_PID_FILE}`"
-	@echo "Sending output to: ${CLIENT_OUT}"
-	@echo "Use this command to tail the output: ${BOLD_GREEN} tail -100f ${CLIENT_OUT} &${RESET_TERM}"
+	@echo "Sending output to: ${CLIENT_LOG}"
+	@echo "Use this command to tail the output: ${BOLD_GREEN} tail -100f ${CLIENT_LOG} &${RESET_TERM}"
 	@echo
 
 stop: server_stop client_stop
@@ -104,17 +67,17 @@ check_links: check_server_link check_client_link
 	@echo "Completed check_links"
 
 check_server_link:
-	@if [ -e ${SERVER_NAME} ] && [ ! -h ${SERVER_NAME} ]; then\
+	@if [ -e ${SERVER_EXE_NAME} ] && [ ! -h ${SERVER_EXE_NAME} ]; then\
 		echo;\
-		echo "${BOLD_RED}ERROR: ${SERVER_NAME} exists but is not a symbolic link.${RESET_TERM}";\
+		echo "${BOLD_RED}ERROR: ${SERVER_EXE_NAME} exists but is not a symbolic link.${RESET_TERM}";\
 		echo;\
 		exit 1;\
 	fi
 
 check_client_link:
-	@if [ -e ${CLIENT_NAME} ] && [ ! -h ${CLIENT_NAME} ]; then\
+	@if [ -e ${CLIENT_EXE_NAME} ] && [ ! -h ${CLIENT_EXE_NAME} ]; then\
 		echo;\
-		echo "${BOLD_RED}ERROR: ${CLIENT_NAME} exists but is not a symbolic link.${RESET_TERM}";\
+		echo "${BOLD_RED}ERROR: ${CLIENT_EXE_NAME} exists but is not a symbolic link.${RESET_TERM}";\
 		echo;\
 		exit 1;\
 	fi
@@ -154,18 +117,18 @@ check_server_pid:
 		echo "Process and/or pid file eliminated.";\
 		echo;\
 	fi;\
-	if [ -n "`ps -ef | grep -v grep | grep "${SERVER_NAME}" | grep "${HOST}" | grep "${PORT}"`" ]; then\
+	if [ -n "`ps -ef | grep -v grep | grep "${SERVER_EXE_NAME}" | grep "${HOST}" | grep "${PORT}"`" ]; then\
 		echo;\
 		echo "${BOLD_RED}ERROR: Found one or more matching server processes with no corresponding \"${SERVER_PID_FILE}\".${RESET_TERM}";\
-		ps -ef | grep -v grep | grep "${SERVER_NAME}" | grep "${HOST}";\
+		ps -ef | grep -v grep | grep "${SERVER_EXE_NAME}" | grep "${HOST}";\
 		echo;\
-		while [ -n "`ps -ef | grep -v grep | grep "${SERVER_NAME}" | grep "${HOST}" | grep "${PORT}"`" ]; do\
+		while [ -n "`ps -ef | grep -v grep | grep "${SERVER_EXE_NAME}" | grep "${HOST}" | grep "${PORT}"`" ]; do\
 			echo;\
-			read -p "Would you like to kill process `ps -ef | grep -v grep | grep ${SERVER_NAME} | grep ${HOST} | grep ${PORT} | awk ' { print $$2 } '` (yes/no/abort)?" ANSWER;\
+			read -p "Would you like to kill process `ps -ef | grep -v grep | grep ${SERVER_EXE_NAME} | grep ${HOST} | grep ${PORT} | awk ' { print $$2 } '` (yes/no/abort)?" ANSWER;\
 			if [ "$${ANSWER}" = "yes" ]; then\
 				echo;\
 				echo "${BOLD_RED}Terminating process at user request.${RESET_TERM}";\
-				kill -9 `ps -ef | grep -v grep | grep ${SERVER_NAME} | grep ${HOST} | grep ${PORT} | awk ' { print $$2 } '`;\
+				kill -9 `ps -ef | grep -v grep | grep ${SERVER_EXE_NAME} | grep ${HOST} | grep ${PORT} | awk ' { print $$2 } '`;\
 				echo;\
 			fi;\
 			if [ "$${ANSWER}" = "abort" ]; then\
@@ -212,18 +175,18 @@ check_client_pid:
 		echo "Process and/or pid file eliminated.";\
 		echo;\
 	fi;\
-	if [ -n "`ps -ef | grep -v grep | grep "${CLIENT_NAME}" | grep "${HOST}" | grep "${PORT}"`" ]; then\
+	if [ -n "`ps -ef | grep -v grep | grep "${CLIENT_EXE_NAME}" | grep "${HOST}" | grep "${PORT}"`" ]; then\
 		echo;\
 		echo "${BOLD_RED}ERROR: Found one or more matching client processes with no corresponding \"${CLIENT_PID_FILE}\".${RESET_TERM}";\
-		ps -ef | grep -v grep | grep "${CLIENT_NAME}" | grep "${HOST}";\
+		ps -ef | grep -v grep | grep "${CLIENT_EXE_NAME}" | grep "${HOST}";\
 		echo;\
-		while [ -n "`ps -ef | grep -v grep | grep "${CLIENT_NAME}" | grep "${HOST}" | grep "${PORT}"`" ]; do\
+		while [ -n "`ps -ef | grep -v grep | grep "${CLIENT_EXE_NAME}" | grep "${HOST}" | grep "${PORT}"`" ]; do\
 			echo;\
-			read -p "Would you like to kill process `ps -ef | grep -v grep | grep ${CLIENT_NAME} | grep ${HOST} | grep ${PORT} | awk ' { print $$2 } '` (yes/no/abort)?" ANSWER;\
+			read -p "Would you like to kill process `ps -ef | grep -v grep | grep ${CLIENT_EXE_NAME} | grep ${HOST} | grep ${PORT} | awk ' { print $$2 } '` (yes/no/abort)?" ANSWER;\
 			if [ "$${ANSWER}" = "yes" ]; then\
 				echo;\
 				echo "${BOLD_RED}Terminating process at user request.${RESET_TERM}";\
-				kill -9 `ps -ef | grep -v grep | grep ${CLIENT_NAME} | grep ${HOST} | grep ${PORT} | awk ' { print $$2 } '`;\
+				kill -9 `ps -ef | grep -v grep | grep ${CLIENT_EXE_NAME} | grep ${HOST} | grep ${PORT} | awk ' { print $$2 } '`;\
 				echo;\
 			fi;\
 			if [ "$${ANSWER}" = "abort" ]; then\
@@ -238,15 +201,15 @@ check_client_pid:
 	fi;
 
 status:
-	@if [ -n "`ps -ef | grep -v grep | grep ${SERVER_NAME} | grep ${HOST} | grep ${PORT}`" ] ||\
-	    [ -n "`ps -ef | grep -v grep | grep ${CLIENT_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
+	@if [ -n "`ps -ef | grep -v grep | grep ${SERVER_EXE_NAME} | grep ${HOST} | grep ${PORT}`" ] ||\
+	    [ -n "`ps -ef | grep -v grep | grep ${CLIENT_EXE_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
 		echo;\
 		ps -ef | head -1;\
-		if [ -n "`ps -ef | grep -v grep | grep ${SERVER_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
-			ps -ef | grep -v grep | grep "${SERVER_NAME}" | grep "${HOST}" | grep "${PORT}";\
+		if [ -n "`ps -ef | grep -v grep | grep ${SERVER_EXE_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
+			ps -ef | grep -v grep | grep "${SERVER_EXE_NAME}" | grep "${HOST}" | grep "${PORT}";\
 		fi;\
-		if [ -n "`ps -ef | grep -v grep | grep ${CLIENT_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
-			ps -ef | grep -v grep | grep "${CLIENT_NAME}" | grep "${HOST}" | grep "${PORT}";\
+		if [ -n "`ps -ef | grep -v grep | grep ${CLIENT_EXE_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
+			ps -ef | grep -v grep | grep "${CLIENT_EXE_NAME}" | grep "${HOST}" | grep "${PORT}";\
 		fi;\
 	else\
 		echo;\
@@ -256,6 +219,6 @@ status:
 	@echo
 
 junk:
-		if [ -n "`ps -ef | grep -v grep | grep ${CLIENT_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\ 
-			ps -ef | grep -v grep | grep "${CLIENT_NAME}" | grep "${HOST}" | grep "${PORT}";\
-		fi;\
+	@echo TOP_DIR is ${TOP_DIR}
+	@echo JUNK is ${JUNK}
+
