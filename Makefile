@@ -10,15 +10,15 @@ TEST_DIR_NAME   = testdir
 SERVER_EXE_NAME = httpserver
 CLIENT_EXE_NAME = httpclient
 
-TOP_DIR         = ~/SW/ServerClientExample
+ROOT_DIR         = ${PWD}
 
-SERVER_DIR      = ${TOP_DIR}/${SERVER_DIR_NAME}
-CLIENT_DIR      = ${TOP_DIR}/${CLIENT_DIR_NAME}
+SERVER_DIR      = ${ROOT_DIR}/${SERVER_DIR_NAME}
+CLIENT_DIR      = ${ROOT_DIR}/${CLIENT_DIR_NAME}
 
 SERVER_EXE      = ${SERVER_DIR}/${SERVER_EXE_NAME}
 CLIENT_EXE      = ${CLIENT_DIR}/${CLIENT_EXE_NAME}
 
-TEST_DIR        = ${TOP_DIR}/${TEST_DIR_NAME}
+TEST_DIR        = ${ROOT_DIR}/${TEST_DIR_NAME}
 
 SERVER_PID_FILE = ${TEST_DIR}/${SERVER_EXE_NAME}_pid
 CLIENT_PID_FILE = ${TEST_DIR}/${CLIENT_EXE_NAME}_pid
@@ -45,7 +45,7 @@ PORT            = 10517
 SAMPLE          = sample.html
 HTTP_DIR        = /
 
-JUNK            = ${TOP_DIR}/junk
+JUNK            = ${ROOT_DIR}/junk
 
 export
 
@@ -81,6 +81,7 @@ it:
 	@cd ${CLIENT_DIR} && make
 	@cd ${TEST_DIR}   && make
 	@cd ${TEST_DIR}   && make start
+	@cd ${TEST_DIR}   && make status
 	@echo "Make it completed."
 	@echo 
 

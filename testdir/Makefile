@@ -1,7 +1,7 @@
 # Makefile for testing the client/server C++ SDK instrumentation logic.
 #
 
-.PHONY: all check_pids check_server_pid check_client_pid check_links check_server_link check_client_link clean_links clean_server_link clean_client_link clean links server_links client_links start server_start client_start stop server_stop client_stop status server_status client_status
+.PHONY: all check_pids check_server_pid check_client_pid check_links check_server_link check_client_link clean_links clean_server_link clean_client_link clean links server_links client_links start server_start client_start stop server_stop client_stop status title_status server_status client_status
 
 all: links
 	@echo "make all completed."
@@ -39,7 +39,7 @@ server_start: check_server_link check_server_pid
 	@echo "Executed on "`date` >> ${SERVER_LOG}
 	${SDK_LOAD_PATH} ./${SERVER_EXE_NAME} ${HOST} ${PORT} ${HTTP_DIR} 2>&1 >> ${SERVER_LOG} &
 	@ps -ef | grep -v grep | grep "${SERVER_EXE_NAME}" | grep "${HOST}" | grep "${PORT}" | awk ' { print $$2 } ' | head -1 > ${SERVER_PID_FILE}
-	@echo "Server started with pid: `cat ${SERVER_PID_FILE}`"
+	@echo "Server started with pid: ${BOLD_YELLOW}`cat ${SERVER_PID_FILE}`${RESET_TERM}"
 	@echo "Sending output to: ${SERVER_LOG}"
 	@echo "Use this command to tail the output: ${BOLD_GREEN} tail -100f ${SERVER_LOG} &${RESET_TERM}"
 	@echo
@@ -51,7 +51,7 @@ client_start: check_client_link check_client_pid
 	@echo "Executed on "`date` >> ${CLIENT_LOG}
 	${SDK_LOAD_PATH} ./${CLIENT_EXE_NAME} ${HOST} ${PORT} ${SAMPLE} 2>&1 >> ${CLIENT_LOG} &
 	@ps -ef | grep -v grep | grep "${CLIENT_EXE_NAME}" | grep "${HOST}" | grep "${PORT}" | awk ' { print $$2 } ' | head -1 > ${CLIENT_PID_FILE}
-	@echo "Client started with pid: `cat ${CLIENT_PID_FILE}`"
+	@echo "Client started with pid: ${BOLD_YELLOW}`cat ${CLIENT_PID_FILE}`${RESET_TERM}"
 	@echo "Sending output to: ${CLIENT_LOG}"
 	@echo "Use this command to tail the output: ${BOLD_GREEN} tail -100f ${CLIENT_LOG} &${RESET_TERM}"
 	@echo
@@ -200,25 +200,35 @@ check_client_pid:
 		echo "Completed check_client_pid";\
 	fi;
 
-status:
+status: title_status client_status server_status
+
+title_status:
+	@echo;
 	@if [ -n "`ps -ef | grep -v grep | grep ${SERVER_EXE_NAME} | grep ${HOST} | grep ${PORT}`" ] ||\
 	    [ -n "`ps -ef | grep -v grep | grep ${CLIENT_EXE_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
 		echo;\
 		ps -ef | head -1;\
+	fi;
+
+server_status:
+	@if [ -n "`ps -ef | grep -v grep | grep ${SERVER_EXE_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
 		if [ -n "`ps -ef | grep -v grep | grep ${SERVER_EXE_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
 			ps -ef | grep -v grep | grep "${SERVER_EXE_NAME}" | grep "${HOST}" | grep "${PORT}";\
 		fi;\
+	else\
+		echo "No Server processes were running.";\
+	fi;
+
+client_status:
+	@if [ -n "`ps -ef | grep -v grep | grep ${CLIENT_EXE_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
 		if [ -n "`ps -ef | grep -v grep | grep ${CLIENT_EXE_NAME} | grep ${HOST} | grep ${PORT}`" ]; then\
 			ps -ef | grep -v grep | grep "${CLIENT_EXE_NAME}" | grep "${HOST}" | grep "${PORT}";\
 		fi;\
 	else\
-		echo;\
-		echo "No Client or Server processes were running.";\
-		echo;\
+		echo "No Client processes were running.";\
 	fi;
-	@echo
 
 junk:
-	@echo TOP_DIR is ${TOP_DIR}
+	@echo ROOT_DIR is ${ROOT_DIR}
 	@echo JUNK is ${JUNK}
 

@@ -59,5 +59,5 @@ clean:
 	rm -f ${CLIENT_EXE}
 
 junk:
-	@echo TOP_DIR is ${TOP_DIR}
+	@echo ROOT_DIR is ${ROOT_DIR}
 	@echo JUNK is ${JUNK}

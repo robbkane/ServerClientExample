@@ -86,5 +86,5 @@ clean:
 	rm -f ${SERVER_EXE} ${SERVER_OBJ} ${SERVER_GCH}
 
 junk:
-	@echo TOP_DIR is ${TOP_DIR}
+	@echo ROOT_DIR is ${ROOT_DIR}
 	@echo JUNK is ${JUNK}
