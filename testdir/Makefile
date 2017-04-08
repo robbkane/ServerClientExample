@@ -56,7 +56,7 @@ client_start: check_client_link check_client_pid
 	@echo "Use this command to tail the output: ${BOLD_GREEN} tail -100f ${CLIENT_LOG} &${RESET_TERM}"
 	@echo
 
-stop: server_stop client_stop
+stop: server_stop client_stop status
 	@echo "Completed program stop for server & client."
 
 server_stop: check_server_pid

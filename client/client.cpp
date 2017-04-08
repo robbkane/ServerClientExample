@@ -195,7 +195,7 @@ int main(int argc, char* argv[])
   const char CONTROLLER_HOST[] = "osxltrkane";
   const int CONTROLLER_PORT = 8090;
   const char CONTROLLER_ACCOUNT[] = "customer1";
-  const char CONTROLLER_ACCESS_KEY[] = "17a9d78c-dec5-419d-8530-d7bcbc3187f7";
+  const char CONTROLLER_ACCESS_KEY[] = "d060f41b-ef56-433d-b2cf-0219ea2018e9";
   const int CONTROLLER_USE_SSL = 0; 
 #ifdef _WIN32
   const int PROXY_CTRL_PORT = 10101;
@@ -238,18 +238,25 @@ int main(int argc, char* argv[])
       return 1;
     }
 
-    const std::string x(argv[3]);
+    const std::string host(argv[1]);
+    const std::string port(argv[2]);
+    const std::string url(argv[3]);
 
     while (1)
     {
-      appd::sdk::BT bt(x);
+      appd::sdk::BT bt(url);
 
-      std::cout << "About to request \"" << argv[3] << "\" on server: " << argv[1] << " port: " << argv[2] << std::endl;
+      bt.set_url(host);
+	  bt.add_user_data("host", host);
+	  bt.add_user_data("port", port);
+	  bt.add_user_data("junk", "junky");
+
+      std::cout << "About to request \"" << url << "\" on server: " << host << " port: " << port << std::endl;
 
       { // Exit call block...
       boost::asio::io_service io_service;
       client c(io_service, argv[1], argv[2], argv[3]);
-      appd::sdk::ExitCall ec(bt, x);
+      appd::sdk::ExitCall ec(bt, url);
       io_service.run();
       }
 
