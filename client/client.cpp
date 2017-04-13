@@ -185,7 +185,8 @@ private:
 
 int main(int argc, char* argv[])
 {
-  int             winks = 40;
+  unsigned int    req_cnt = 0;
+  int             winks = 20;
   int             initRC;
   appd_config     cfg;
 
@@ -213,7 +214,7 @@ int main(int argc, char* argv[])
   cfg.controller.account = (char*)CONTROLLER_ACCOUNT;
   cfg.controller.access_key = (char*)CONTROLLER_ACCESS_KEY;
   cfg.controller.use_ssl = CONTROLLER_USE_SSL;
-  cfg.init_timeout_ms = 60000;
+  cfg.init_timeout_ms = 4000;
 #ifdef _WIN32
   cfg.appd_proxy_config.tcp_control_port = PROXY_CTRL_PORT;
   cfg.appd_proxy_config.tcp_request_port = PROXY_REQ_PORT;
@@ -251,7 +252,7 @@ int main(int argc, char* argv[])
 	  bt.add_user_data("port", port);
 	  bt.add_user_data("junk", "junky");
 
-      std::cout << "About to request \"" << url << "\" on server: " << host << " port: " << port << std::endl;
+      std::cout << "About to request \"" << url << "\" [#" << req_cnt++ << "] on server: " << host << " port: " << port << std::endl << ">>>>>" << std::endl;
 
       { // Exit call block...
       boost::asio::io_service io_service;
@@ -260,7 +261,7 @@ int main(int argc, char* argv[])
       io_service.run();
       }
 
-      std::cout << "Sleeping for " << winks << " seconds..." << std::endl;
+      std::cout << "<<<<<" << std::endl << std::endl << "Sleeping for " << winks << " seconds..." << std::endl;
       std::this_thread::sleep_for (std::chrono::seconds(winks));
     }
   }

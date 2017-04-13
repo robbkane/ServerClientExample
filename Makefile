@@ -3,37 +3,44 @@
 # Required libraries:
 #
 #
-SERVER_DIR_NAME = server
-CLIENT_DIR_NAME = client
-TEST_DIR_NAME   = testdir
-
-SERVER_EXE_NAME = httpserver
-CLIENT_EXE_NAME = httpclient
-
-ROOT_DIR         = ${PWD}
-
-SERVER_DIR      = ${ROOT_DIR}/${SERVER_DIR_NAME}
-CLIENT_DIR      = ${ROOT_DIR}/${CLIENT_DIR_NAME}
-
-SERVER_EXE      = ${SERVER_DIR}/${SERVER_EXE_NAME}
-CLIENT_EXE      = ${CLIENT_DIR}/${CLIENT_EXE_NAME}
-
-TEST_DIR        = ${ROOT_DIR}/${TEST_DIR_NAME}
-
-SERVER_PID_FILE = ${TEST_DIR}/${SERVER_EXE_NAME}_pid
-CLIENT_PID_FILE = ${TEST_DIR}/${CLIENT_EXE_NAME}_pid
-
-SERVER_PID      = `cat ${SERVER_PID_FILE}`
-CLIENT_PID      = `cat ${CLIENT_PID_FILE}`
-
-SERVER_LOG      = "${TEST_DIR}/${SERVER_EXE_NAME}.log"
-CLIENT_LOG      = "${TEST_DIR}/${CLIENT_EXE_NAME}.log"
-
 SDK_ROOT        = /opt/appdynamics-sdk-native
 SDK_INC_DIR     = ${SDK_ROOT}/sdk_lib
 SDK_LIB_DIR     = ${SDK_ROOT}/sdk_lib/lib
 SDK_LIB         = ${SDK_LIB_DIR}/libappdynamics_native_sdk.so
 SDK_LOAD_PATH   = LD_LIBRARY_PATH=${SDK_LIB_DIR}
+
+PROXY_DIR       = ${SDK_ROOT}
+PROXY_TYPE      = NATIVE_SDK
+PROXY_NICKNAME  = proxy
+
+PROXY_EXE_NAME  = runSDKProxy.sh
+SERVER_EXE_NAME = httpserver
+CLIENT_EXE_NAME = httpclient
+
+SERVER_DIR_NAME = server
+CLIENT_DIR_NAME = client
+TEST_DIR_NAME   = testdir
+
+ROOT_DIR        = ${PWD}
+TEST_DIR        = ${ROOT_DIR}/${TEST_DIR_NAME}
+SERVER_DIR      = ${ROOT_DIR}/${SERVER_DIR_NAME}
+CLIENT_DIR      = ${ROOT_DIR}/${CLIENT_DIR_NAME}
+
+PROXY_EXE       = ${PROXY_DIR}/${PROXY_EXE_NAME}
+SERVER_EXE      = ${SERVER_DIR}/${SERVER_EXE_NAME}
+CLIENT_EXE      = ${CLIENT_DIR}/${CLIENT_EXE_NAME}
+
+PROXY_PID_FILE  = ${TEST_DIR}/${PROXY_NICKNAME}_pid
+SERVER_PID_FILE = ${TEST_DIR}/${SERVER_EXE_NAME}_pid
+CLIENT_PID_FILE = ${TEST_DIR}/${CLIENT_EXE_NAME}_pid
+
+PROXY_PID       = `cat ${PROXY_PID_FILE}`
+SERVER_PID      = `cat ${SERVER_PID_FILE}`
+CLIENT_PID      = `cat ${CLIENT_PID_FILE}`
+
+PROXY_LOG       = "${TEST_DIR}/${PROXY_NICKNAME}.log"
+SERVER_LOG      = "${TEST_DIR}/${SERVER_EXE_NAME}.log"
+CLIENT_LOG      = "${TEST_DIR}/${CLIENT_EXE_NAME}.log"
 
 BOLD_RED        = \033[1m\033[31m
 BOLD_GREEN      = \033[1m\033[32m
@@ -42,17 +49,32 @@ RESET_TERM      = \033[0m
 
 HOST            = 127.0.0.1
 PORT            = 10517
-SAMPLE          = sample.html
-HTTP_DIR        = /
+SAMPLE          = /sample.html
+HTTP_DIR        = /home/user1/SW/ServerClientExample/testdir
 
 JUNK            = ${ROOT_DIR}/junk
 
 export
 
-.PHONY: all server client testdir clean it list help 
+.PHONY: all server client testdir clean it list help  proxy_start proxy_stop proxy_status
 
 all: server client testdir
 	@echo "make all completed successfully"
+
+proxy_start:
+	@cd ${TEST_DIR} && make proxy_start
+	@echo "Make proxy_start completed."
+	@echo 
+
+proxy_stop:
+	@cd ${TEST_DIR} && make proxy_stop
+	@echo "Make proxy_stop completed."
+	@echo 
+
+proxy_status:
+	@cd ${TEST_DIR} && make proxy_status
+	@echo "Make proxy_status completed."
+	@echo 
 
 server:
 	@cd ${SERVER_DIR} && make
@@ -109,8 +131,8 @@ list:
 	@echo "it     - build everything if needed, start everything."
 	@echo "clean  - removed all derived objects."
 	@echo "links  - create \[in ${TEST_DIR}\] the symlinks to executes."
-	@echo "start  - start the client & server \[also: server_start, client_start\]"
-	@echo "stop   - stop the client & server \[also: server_stop, client_stop\]"
+	@echo "start  - start the proxy, server, and client. \[also: proxy_start, server_start, client_start\]"
+	@echo "stop   - stop the proxy, server, and client \[also: proxy_stop, server_stop, client_stop\]"
 
 help:
 	@echo 

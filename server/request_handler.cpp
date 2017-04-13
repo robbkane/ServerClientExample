@@ -28,20 +28,37 @@ request_handler::request_handler(const std::string& doc_root)
 
 void request_handler::handle_request(const request& req, reply& rep)
 {
+  static unsigned int req_cnt = 0;
+
   // Decode url to path.
   std::string request_path;
   if (!url_decode(req.uri, request_path))
   {
+    std::cout << "Could not decode URL." << std::endl;   //RKane
     rep = reply::stock_reply(reply::bad_request);
     return;
   }
 
-  std::cout << "Got request: " << request_path << std::endl;   //RKane
+  std::cout << std::endl << "Got request " << req_cnt++ << ": " << request_path << std::endl;   //RKane
 
   // Request path must be absolute and not contain "..".
-  if (request_path.empty() || request_path[0] != '/'
-      || request_path.find("..") != std::string::npos)
+  if (request_path.empty())
   {
+    std::cout << "Request path is empty." << std::endl;   //RKane
+    rep = reply::stock_reply(reply::bad_request);
+    return;
+  }
+
+  if (request_path[0] != '/')
+  {
+    std::cout << "Request: \"" << request_path << "\" must start with \"/\"." << std::endl;   //RKane
+    rep = reply::stock_reply(reply::bad_request);
+    return;
+  }
+
+  if (request_path.find("..") != std::string::npos)
+  {
+    std::cout << "Request: \"" << request_path << "\" may not contain \"..\" within path." << std::endl;   //RKane
     rep = reply::stock_reply(reply::bad_request);
     return;
   }
@@ -49,6 +66,7 @@ void request_handler::handle_request(const request& req, reply& rep)
   // If path ends in slash (i.e. is a directory) then add "index.html".
   if (request_path[request_path.size() - 1] == '/')
   {
+    std::cout << "Request: \"" << request_path << "\" is a directory, adding index.html to pathname" << std::endl;   //RKane
     request_path += "index.html";
   }
 
@@ -59,14 +77,17 @@ void request_handler::handle_request(const request& req, reply& rep)
   if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
   {
     extension = request_path.substr(last_dot_pos + 1);
+    std::cout << "Extension is \"" << extension << "\"" << std::endl;   //RKane
   }
 
   // Open the file to send back.
   std::string full_path = doc_root_ + request_path;
+  std::cout << "Full path is \"" << full_path << "\"" << std::endl;   //RKane
   std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
   if (!is)
   {
     rep = reply::stock_reply(reply::not_found);
+    std::cout << "Could not open file." << std::endl;   //RKane
     return;
   }
 
