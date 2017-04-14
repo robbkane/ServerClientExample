@@ -56,7 +56,7 @@ JUNK            = ${ROOT_DIR}/junk
 
 export
 
-.PHONY: all server client testdir clean it list help  proxy_start proxy_stop proxy_status
+.PHONY: all server client testdir clean it list help  proxy_start proxy_stop proxy_status proxy_check_pid
 
 all: server client testdir
 	@echo "make all completed successfully"
@@ -74,6 +74,11 @@ proxy_stop:
 proxy_status:
 	@cd ${TEST_DIR} && make proxy_status
 	@echo "Make proxy_status completed."
+	@echo 
+
+proxy_check_pid:
+	@cd ${TEST_DIR} && make proxy_check_pid
+	@echo "Make proxy_check_pid completed."
 	@echo 
 
 server:
