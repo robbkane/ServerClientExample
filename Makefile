@@ -136,12 +136,15 @@ list:
 	@echo "it     - build everything if needed, start everything."
 	@echo "clean  - removed all derived objects."
 	@echo "links  - create \[in ${TEST_DIR}\] the symlinks to executes."
-	@echo "start  - start the proxy, server, and client. \[also: proxy_start, server_start, client_start\]"
-	@echo "stop   - stop the proxy, server, and client \[also: proxy_stop, server_stop, client_stop\]"
+	@echo "start  - start the server and client. \[also: server_start, client_start\]"
+	@echo "stop   - stop the server and client \[also: server_stop, client_stop\]"
+	@echo "proxy_start   - start the proxy."
+	@echo "proxy_stop    - stop the proxy."
+	@echo "proxy_status  - show proxy status."
 
 help:
 	@echo 
-	@echo "This Makefile script is used to start the server and client, both of which are instrumented"
+	@echo "This Makefile script is used to start the proxy, server and client, the last two of which areinstrumented  
 	@echo "using the AppDynamics C++/C SDK.   Run make list for a list of which commands are available."
 	@echo 
 	@echo "The make process first checks to see if there is a client or server process already running, and"
@@ -151,6 +154,9 @@ help:
 	@echo "out of the \"${TEST_DIR_NAME}\" directory, witht the client making HTTP requests to the server."
 	@echo
 	@echo "The Server process will poll on \"${HOST}:${PORT}\", satisfying the client requests." 
+	@echo 
+	@echo "Remember to always start the proxy only once for a given host, and to make sure that the appdynamics_agent.conf file"
+	@echo "does not contain the AppDynamicsLauncProxy directive, or you will spawn multiple proxies unintentionally."
 	@echo 
 
 junk:

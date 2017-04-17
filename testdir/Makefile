@@ -36,7 +36,9 @@ start: server_start client_start
 proxy_start: proxy_check_pid
 	@echo
 	@echo "About to start \"${PROXY_EXE_NAME}\"..."
-	@echo "Starting \"${PROXY_EXE_NAME}\" on `date` " > ${PROXY_LOG}
+	@echo "\n\n********************************************" > ${PROXY_LOG}
+	@echo "Starting \"${PROXY_EXE_NAME}\" on `date`.\n\n" >> ${PROXY_LOG}
+	@echo "********************************************\n\n" >> ${PROXY_LOG}
 	@${PROXY_EXE} >> ${PROXY_LOG} 2>&1 &
 	@sleep 2
 	@ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | awk ' { print $$2 } ' | head -1 > ${PROXY_PID_FILE}
@@ -48,7 +50,9 @@ proxy_start: proxy_check_pid
 server_start: check_server_link server_check_pid
 	@echo
 	@echo "About to start \"${SERVER_EXE_NAME}\" using host \"${HOST}\", port \"${PORT}\", and HTTP root directory \"${HTTP_DIR}\"..."
-	@echo "Starting ${SERVER_EXE_NAME} using host ${HOST}, port ${PORT}, and HTTP root directory \"${HTTP_DIR}\"" > ${SERVER_LOG}
+	@echo "\n\n********************************************" > ${SERVER_LOG}
+	@echo "Starting ${SERVER_EXE_NAME} using host ${HOST}, port ${PORT}, and HTTP root directory \"${HTTP_DIR}\"" >> ${SERVER_LOG}
+	@echo "********************************************\n\n" >> ${SERVER_LOG}
 	@echo "Executed on "`date` >> ${SERVER_LOG}
 	@${SDK_LOAD_PATH} ./${SERVER_EXE_NAME} ${HOST} ${PORT} ${HTTP_DIR} >> ${SERVER_LOG} 2>&1 &
 	@sleep 1
@@ -61,7 +65,9 @@ server_start: check_server_link server_check_pid
 client_start: check_client_link client_check_pid
 	@echo
 	@echo "About to start \"${CLIENT_EXE_NAME}\" using host \"${HOST}\", port \"${PORT}\", and file \"${SAMPLE}\"..."
-	@echo "Starting ${CLIENT_EXE_NAME} using host ${HOST}, port ${PORT}, and file ${SAMPLE}" > ${CLIENT_LOG}
+	@echo "\n\n********************************************" > ${CLIENT_LOG}
+	@echo "Starting ${CLIENT_EXE_NAME} using host ${HOST}, port ${PORT}, and file ${SAMPLE}" >> ${CLIENT_LOG}
+	@echo "********************************************\n\n" >> ${CLIENT_LOG}
 	@echo "Executed on "`date` >> ${CLIENT_LOG}
 	@${SDK_LOAD_PATH} ./${CLIENT_EXE_NAME} ${HOST} ${PORT} ${SAMPLE} >> ${CLIENT_LOG} 2>&1 &
 	@ps -ef | grep -v grep | grep "${CLIENT_EXE_NAME}" | grep "${HOST}" | grep "${PORT}" | awk ' { print $$2 } ' | head -1 > ${CLIENT_PID_FILE}
@@ -70,8 +76,8 @@ client_start: check_client_link client_check_pid
 	@echo "Use this command to tail the output: ${BOLD_GREEN} tail -100f ${CLIENT_LOG}${RESET_TERM}"
 	@echo
 
-stop: client_stop server_stop proxy_stop status
-	@echo "Completed program stop for client, server, and proxy."
+stop: client_stop server_stop status
+	@echo "Completed program stop for client and server."
 
 proxy_stop: proxy_check_pid
 
@@ -167,31 +173,8 @@ proxy_check_pid:
 		echo "${BOLD_RED}Run \"make proxy_stop\" and terminate superflous proxies before continuing.${RESET_TERM}";\
 		echo;\
 	fi;
-	@echo "Completed proxy_check_pid";
-
-junky:
-#	if [ 0 -lt "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | wc -l`" ]; then\
-#			echo;\
-#			echo "${BOLD_RED}ERROR: Found one or more matching proxy processes with no corresponding pid file(\"${PROXY_PID_FILE}\").${RESET_TERM}";\
-#			ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}";\
-#			while [ -n "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}"`" ]; do\
-#				echo;\
-#				read -p "Would you like to kill process `ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | awk ' { print $$2 } '` (yes/abort)?" ANSWER;\
-#				if [ "$${ANSWER}" = "abort" ]; then\
-#					echo;\
-#					echo "${BOLD_RED}Aborting make at user request.${RESET_TERM}";\
-#					echo;\
-#					exit 1;\
-#				fi;\
-#				if [ "$${ANSWER}" = "yes" ]; then\
-#					echo;\
-#					echo "${BOLD_RED}Terminating process at user request.${RESET_TERM}";\
-#					kill -9 `ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | awk ' { print $$2 } '`;\
-#					echo;\
-#				fi;\
-#			done;\
-#		fi;\
-#		echo;\
+	
+#	@echo "Completed proxy_check_pid";
 
 server_check_pid: 
 	@if [ -f ${SERVER_PID_FILE} ] && [ -s ${SERVER_PID_FILE} ]; then\
@@ -248,8 +231,9 @@ server_check_pid:
 			fi;\
 		done;\
 		echo;\
-		echo "Completed server_check_pid";\
 	fi;
+
+#		echo "Completed server_check_pid";\
 
 client_check_pid:
 	@if [ -f "${CLIENT_PID_FILE}" ] && [ -s "${CLIENT_PID_FILE}" ]; then\
@@ -306,10 +290,11 @@ client_check_pid:
 			fi;\
 		done;\
 		echo;\
-		echo "Completed client_check_pid";\
 	fi;
 
-status: title_status proxy_status server_status client_status 
+# 		echo "Completed client_check_pid";\
+
+status: title_status server_status client_status 
 
 title_status:
 	@echo;
@@ -329,9 +314,7 @@ proxy_status: proxy_check_pid
 			echo;\
 		fi;\
 	else\
-		echo;\
 		echo "${BOLD_GREEN}No Proxy processes were running.${RESET_TERM}";\
-		echo;\
 	fi;
 
 server_status:
@@ -343,9 +326,7 @@ server_status:
 			echo;\
 		fi;\
 	else\
-		echo;\
 		echo "${BOLD_GREEN}No Server processes were running.${RESET_TERM}";\
-		echo;\
 	fi;
 
 client_status:
@@ -357,9 +338,7 @@ client_status:
 			echo;\
 		fi;\
 	else\
-		echo;\
 		echo "${BOLD_GREEN}No Client processes were running.${RESET_TERM}";\
-		echo;\
 	fi;
 
 junk:
