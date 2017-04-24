@@ -24,7 +24,7 @@ class client
 {
 public:
   client(boost::asio::io_service& io_service,
-      const std::string& server, const std::string& port, const std::string& path)
+      const std::string& server, const std::string& port, const std::string& path, const std::string& appd_correlation_header)
     : resolver_(io_service),
       socket_(io_service)
   {
@@ -35,6 +35,9 @@ public:
     request_stream << "GET " << path << " HTTP/1.0\r\n";
     request_stream << "Host: " << server << "\r\n";
     request_stream << "Accept: */*\r\n";
+
+    request_stream << "singularityheader: " << appd_correlation_header << "\r\n";  // RKane
+
     request_stream << "Connection: close\r\n\r\n";
 
     // Start an asynchronous resolve to translate the server and service names
@@ -190,13 +193,13 @@ int main(int argc, char* argv[])
   int             initRC;
   appd_config     cfg;
 
-  const char APP_NAME[] = "CES_89333_Client";
-  const char TIER_NAME[] = "CES_89333_Client_T1";
-  const char NODE_NAME[] = "CES_89333_Client_T1_N1";
+  const char APP_NAME[] = "CES_ClientExample";
+  const char TIER_NAME[] = "CES_ClientExample_T1";
+  const char NODE_NAME[] = "CES_ClientExample_T1_N1";
   const char CONTROLLER_HOST[] = "osxltrkane";
   const int CONTROLLER_PORT = 8090;
   const char CONTROLLER_ACCOUNT[] = "customer1";
-  const char CONTROLLER_ACCESS_KEY[] = "d060f41b-ef56-433d-b2cf-0219ea2018e9";
+  const char CONTROLLER_ACCESS_KEY[] = "64ede871-3750-4b63-ae7f-ec0a7413e456";
   const int CONTROLLER_USE_SSL = 0; 
 #ifdef _WIN32
   const int PROXY_CTRL_PORT = 10101;
@@ -248,15 +251,27 @@ int main(int argc, char* argv[])
       appd::sdk::BT bt(url);
 
       bt.set_url(host);
-	  bt.add_user_data("host", host);
-	  bt.add_user_data("port", port);
-	  bt.add_user_data("junk", "junky");
+      bt.add_user_data("host", host);
+      bt.add_user_data("port", port);
+      bt.add_user_data("junk", "junky");
 
-      std::cout << "About to request \"" << url << "\" [#" << req_cnt++ << "] on server: " << host << " port: " << port << std::endl << ">>>>>" << std::endl;
+// do I need to create a backend first?
+
+
+      appd::sdk::ExitCall ec(bt, NULL);
+
+      const std::string& appd_correlation_header = ec.get_correlation_header();
+
+      std::cout << "Request " << req_cnt++ 
+                << " URL: \"" << url << "\""
+                << " on server: " << host 
+                << " port: " << port 
+                << " with correlation header: \"" << appd_correlation_header << "\"."
+                << std::endl << ">>>>>" << std::endl;
 
       { // Exit call block...
       boost::asio::io_service io_service;
-      client c(io_service, argv[1], argv[2], argv[3]);
+      client c(io_service, argv[1], argv[2], argv[3], appd_correlation_header);
       appd::sdk::ExitCall ec(bt, url);
       io_service.run();
       }

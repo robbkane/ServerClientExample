@@ -1,7 +1,7 @@
 # Makefile for testing the client/server C++ SDK instrumentation logic.
 #
 
-.PHONY: all check_pids proxy_check_pid server_check_pid client_check_pid check_links check_server_link check_client_link clean_links clean clean_server_link clean_client_link links server_links client_links start proxy_start server_start client_start stop proxy_stop server_stop client_stop status title_status proxy_status server_status client_status
+.PHONY: all check_pids proxy_check_pid server_check_pid client_check_pid check_links check_server_link check_client_link clean_links clean clean_server_link clean_client_link links server_links client_links start proxy proxy_start server_start client_start stop proxy_stop server_stop client_stop status title_status proxy_status server_status client_status
 
 all: links
 	@echo "make all completed."
@@ -33,6 +33,9 @@ clean_client_link: check_client_link client_check_pid
 start: server_start client_start
 	@echo "Completed program start for server & client."
 
+proxy: proxy_start
+	@echo
+
 proxy_start: proxy_check_pid
 	@echo
 	@echo "About to start \"${PROXY_EXE_NAME}\"..."
@@ -48,6 +51,15 @@ proxy_start: proxy_check_pid
 	@echo
 
 server_start: check_server_link server_check_pid
+	@if [ -n "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}"`" ]; then\
+		if [ 1 = "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | wc -l`" ]; then\
+			echo "${BOLD_GREEN}Existing proxy process running.${RESET_TERM}";\
+			ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}";\
+		fi;\
+	else\
+		echo "${BOLD_RED}No Proxy process running!  Try \"make proxy_start\" first.${RESET_TERM}";\
+		exit 1;\
+	fi;
 	@echo
 	@echo "About to start \"${SERVER_EXE_NAME}\" using host \"${HOST}\", port \"${PORT}\", and HTTP root directory \"${HTTP_DIR}\"..."
 	@echo "\n\n********************************************" > ${SERVER_LOG}
@@ -63,6 +75,15 @@ server_start: check_server_link server_check_pid
 	@echo
 
 client_start: check_client_link client_check_pid
+	@if [ -n "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}"`" ]; then\
+		if [ 1 = "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | wc -l`" ]; then\
+			echo "${BOLD_GREEN}Existing proxy process running.${RESET_TERM}";\
+			ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}";\
+		fi;\
+	else\
+		echo "${BOLD_RED}No Proxy process running!  Try \"make proxy_start\" first.${RESET_TERM}";\
+		exit 1;\
+	fi;
 	@echo
 	@echo "About to start \"${CLIENT_EXE_NAME}\" using host \"${HOST}\", port \"${PORT}\", and file \"${SAMPLE}\"..."
 	@echo "\n\n********************************************" > ${CLIENT_LOG}
