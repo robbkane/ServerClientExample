@@ -190,12 +190,22 @@ int main(int argc, char* argv[])
 {
   unsigned int    req_cnt = 0;
   int             winks = 20;
-  int             initRC;
+  int             rc;
   appd_config     cfg;
 
+  appd_context_config app_context2;
+
+  const std::string host(argv[1]);
+  const std::string port(argv[2]);
+  const std::string url(argv[3]);
+
+  const char BACKEND_NAME[] = "ClientExample_Backend_Name";
+  const char APP_CONTEXT2_NAME[] = "CES_ClientExample_AppContext2";
   const char APP_NAME[] = "CES_ClientExample";
-  const char TIER_NAME[] = "CES_ClientExample_T1";
-  const char NODE_NAME[] = "CES_ClientExample_T1_N1";
+  const char TIER1_NAME[] = "CES_ClientExample_T1";
+  const char NODE1_NAME[] = "CES_ClientExample_T1_N1";
+  const char TIER2_NAME[] = "CES_ClientExample_T2";
+  const char NODE2_NAME[] = "CES_ClientExample_T2_N2";
   const char CONTROLLER_HOST[] = "osxltrkane";
   const int CONTROLLER_PORT = 8090;
   const char CONTROLLER_ACCOUNT[] = "customer1";
@@ -210,8 +220,8 @@ int main(int argc, char* argv[])
   appd_config_init(&cfg);
 
   cfg.app_name = (char*)APP_NAME;
-  cfg.tier_name = (char*)TIER_NAME;
-  cfg.node_name = (char*)NODE_NAME;
+  cfg.tier_name = (char*)TIER1_NAME;
+  cfg.node_name = (char*)NODE1_NAME;
   cfg.controller.host = (char*)CONTROLLER_HOST;
   cfg.controller.port = CONTROLLER_PORT;
   cfg.controller.account = (char*)CONTROLLER_ACCOUNT;
@@ -224,27 +234,75 @@ int main(int argc, char* argv[])
   cfg.appd_proxy_config.tcp_reporting_port = PROXY_REP_PORT;
 #endif
  
-  initRC = appd_sdk_init(&cfg);
-
-  if (initRC)
-  {
-    std::cerr <<  "Error: sdk init: " << initRC << ". Check that proxy is still running.";
-    return 1;
-  }
+  app_context2.app_name  = APP_NAME;
+  app_context2.tier_name = TIER2_NAME;
+  app_context2.node_name = NODE2_NAME;
 
   try
   {
     if (argc != 4)
     {
-      std::cout << "Usage: httpclient <server> <port> <path>\n";
-      std::cout << "Example:\n";
-      std::cout << "  httpclient www.boost.org 80 /LICENSE_1_0.txt\n";
+      std::cout << "Usage: httpclient <server> <port> <path>" << std::endl;
+      std::cout << "Example:" << std::endl;
+      std::cout << "  httpclient www.boost.org 80 /LICENSE_1_0.txt" << std::endl;
       return 1;
     }
 
-    const std::string host(argv[1]);
-    const std::string port(argv[2]);
-    const std::string url(argv[3]);
+	std::cout << "Primary context:  "                           << std::endl
+			  << "   Application: \"" << cfg.app_name           << std::endl
+			  << "   Tier Name:   \"" << cfg.tier_name          << std::endl
+			  << "   Node Name:   \"" << cfg.node_name          << std::endl
+			  << "Secondary Context:"                           << std::endl
+			  << "   Application: \"" << app_context2.app_name  << std::endl
+			  << "   Tier Name:   \"" << app_context2.tier_name << std::endl
+			  << "   Node Name:   \"" << app_context2.node_name << std::endl;
+
+    rc = appd_sdk_init(&cfg);
+
+    if (rc)
+    {
+      std::cerr <<  "Error: sdk init() call returned " << rc << ". Check that proxy is still running." << std::endl;
+      return 1;
+    }
+
+	rc = appd_config_add_app_context(&cfg, APP_CONTEXT2_NAME, &app_context2);
+
+    appd_backend_declare(APPD_BACKEND_HTTP, BACKEND_NAME);
+
+    rc = appd_backend_set_identifying_property(BACKEND_NAME, "HOST", argv[1]);
+
+	if (rc)
+	{
+      std::cerr <<  "Error: appd_backend_set_identifying_property(\"" << APPD_BACKEND_HTTP
+			    << "\", \"HOST\", \"" << argv[1] << "\") returned " << rc << std::endl;
+      return 1;
+	}
+
+    rc = appd_backend_set_identifying_property(BACKEND_NAME, "PORT", argv[2]);
+
+	if (rc)
+	{
+      std::cerr <<  "Error: appd_backend_set_identifying_property(\"" << APPD_BACKEND_HTTP
+			    << "\", \"PORT\", \"" << argv[2] << "\") returned " << rc << std::endl;
+      return 1;
+	}
+
+    rc = appd_backend_set_identifying_property(BACKEND_NAME, "URL",  argv[3]);
+
+	if (rc)
+	{
+      std::cerr <<  "Error: appd_backend_set_identifying_property(\"" << APPD_BACKEND_HTTP
+			    << "\", \"URL\", \"" << argv[3] << "\") returned " << rc << std::endl;
+      return 1;
+	}
+
+    rc = appd_backend_add(BACKEND_NAME);
+
+	if (rc)
+	{
+      std::cerr <<  "Error: appd_backend_add(\"" << APPD_BACKEND_HTTP << "\") returned " << rc << std::endl;
+      return 1;
+	}
 
     while (1)
     {
@@ -255,30 +313,37 @@ int main(int argc, char* argv[])
       bt.add_user_data("port", port);
       bt.add_user_data("junk", "junky");
 
-// do I need to create a backend first?
+      // Exit call block...
+	  {
+        appd::sdk::ExitCall ec(bt, BACKEND_NAME);
 
+        const std::string& appd_correlation_header = ec.get_correlation_header();
 
-      appd::sdk::ExitCall ec(bt, NULL);
+		auto handle = appd_bt_begin_with_app_context(APP_CONTEXT2_NAME,"bt2", appd_correlation_header.c_str());
 
-      const std::string& appd_correlation_header = ec.get_correlation_header();
+        std::cout << "appd_bt_begin_with_app_context(\"" 
+				  << APP_CONTEXT2_NAME << "\", \"bt2\", " 
+				  << appd_correlation_header.c_str() 
+				  << ") returned " << handle << std::endl;
 
-      std::cout << "Request " << req_cnt++ 
-                << " URL: \"" << url << "\""
-                << " on server: " << host 
-                << " port: " << port 
-                << " with correlation header: \"" << appd_correlation_header << "\"."
-                << std::endl << ">>>>>" << std::endl;
+        std::cout << "About to make request " << req_cnt++ 
+                  << " URL: \"" << url << "\""
+                  << " on server: " << host 
+                  << " port: " << port 
+                  << " with correlation header: \"" << appd_correlation_header << "\"."
+                  << std::endl << ">>>>>" << std::endl;
 
-      { // Exit call block...
-      boost::asio::io_service io_service;
-      client c(io_service, argv[1], argv[2], argv[3], appd_correlation_header);
-      appd::sdk::ExitCall ec(bt, url);
-      io_service.run();
+        boost::asio::io_service io_service;
+        client c(io_service, argv[1], argv[2], argv[3], appd_correlation_header);
+        io_service.run();
+
+		appd_bt_end(handle);
       }
 
       std::cout << "<<<<<" << std::endl << std::endl << "Sleeping for " << winks << " seconds..." << std::endl;
       std::this_thread::sleep_for (std::chrono::seconds(winks));
     }
+
   }
   catch (std::exception& e)
   {
