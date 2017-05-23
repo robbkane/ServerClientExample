@@ -165,14 +165,14 @@ list:
 
 help:
 	@echo 
-	@echo "This Makefile script is used to start the proxy, server and client, the last two of which areinstrumented  
-	@echo "using the AppDynamics C++/C SDK.   Run make list for a list of which commands are available."
+	@echo "This Makefile script is used to start the proxy, server and client, the last two of which are instrumented"
+	@echo "using the AppDynamics C++/C SDK.   Run \"make list\" for a list of which commands are available."
 	@echo 
 	@echo "The make process first checks to see if there is a client or server process already running, and"
 	@echo "if so, prompts the user to abort the prior version before continuing.   The code is kept in two"
 	@echo "subdirectories, a \"${SERVER_DIR_NAME}\" directory and a \"${CLIENT_DIR_NAME}\" directory, including the dervied objects and"
 	@echo "executables.  A \"${TEST_DIR_NAME} subdirectory creates symbolic links to the executables. The programs execute"
-	@echo "out of the \"${TEST_DIR_NAME}\" directory, witht the client making HTTP requests to the server."
+	@echo "out of the \"${TEST_DIR_NAME}\" directory, with the client making HTTP requests to the server."
 	@echo
 	@echo "The Server process will poll on \"${HOST}:${PORT}\", satisfying the client requests." 
 	@echo 
