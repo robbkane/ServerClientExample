@@ -1,7 +1,7 @@
 # Makefile for testing the client/server C++ SDK instrumentation logic.
 #
 
-.PHONY: all check_pids proxy_check_pid server_check_pid client_check_pid check_links check_server_link check_client_link clean_links clean clean_server_link clean_client_link links server_links client_links start proxy proxy_start server_start client_start stop proxy_stop server_stop client_stop status title_status proxy_status server_status client_status
+.PHONY: all check_pids check_server_pid check_client_pid check_links check_server_link check_client_link clean clean_server_link clean_client_link links server_links client_links start server_start client_start stop server_stop client_stop status title_status server_status client_status
 
 all: links
 	@echo "make all completed."
@@ -18,13 +18,13 @@ client_link: check_client_link
 clean: clean_server_link clean_client_link
 	@echo "Completed clean."
 
-clean_server_link: check_server_link server_check_pid
+clean_server_link: check_server_link check_server_pid
 	@if [ -h ${SERVER_EXE_NAME} ]; then\
 		echo "rm -f ${SERVER_EXE_NAME}";\
 		rm -f ${SERVER_EXE_NAME};\
 	fi;
 
-clean_client_link: check_client_link client_check_pid
+clean_client_link: check_client_link check_client_pid
 	@if [ -h ${CLIENT_EXE_NAME} ]; then\
 		echo "rm -f ${CLIENT_EXE_NAME}";\
 		rm -f ${CLIENT_EXE_NAME};\
@@ -33,24 +33,7 @@ clean_client_link: check_client_link client_check_pid
 start: server_start client_start
 	@echo "Completed program start for server & client."
 
-proxy: proxy_start
-	@echo
-
-proxy_start: proxy_check_pid
-	@echo
-	@echo "About to start \"${PROXY_EXE_NAME}\"..."
-	@echo "\n\n********************************************" > ${PROXY_LOG}
-	@echo "Starting \"${PROXY_EXE_NAME}\" on `date`.\n\n" >> ${PROXY_LOG}
-	@echo "********************************************\n\n" >> ${PROXY_LOG}
-	@${PROXY_EXE} >> ${PROXY_LOG} 2>&1 &
-	@sleep 2
-	@ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | awk ' { print $$2 } ' | head -1 > ${PROXY_PID_FILE}
-	@echo "Proxy started with pid: ${BOLD_YELLOW}`cat ${PROXY_PID_FILE}`${RESET_TERM}"
-	@echo "Sending output to: ${PROXY_LOG}"
-	@echo "Use this command to tail the output: ${BOLD_GREEN} tail -100f ${PROXY_LOG}${RESET_TERM}"
-	@echo
-
-server_start: check_server_link server_check_pid
+server_start: check_server_link check_server_pid
 	@if [ -n "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}"`" ]; then\
 		if [ 1 = "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | wc -l`" ]; then\
 			echo "${BOLD_GREEN}Existing proxy process running.${RESET_TERM}";\
@@ -74,7 +57,7 @@ server_start: check_server_link server_check_pid
 	@echo "Use this command to tail the output: ${BOLD_GREEN} tail -100f ${SERVER_LOG}${RESET_TERM}"
 	@echo
 
-client_start: check_client_link client_check_pid
+client_start: check_client_link check_client_pid
 	@if [ -n "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}"`" ]; then\
 		if [ 1 = "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | wc -l`" ]; then\
 			echo "${BOLD_GREEN}Existing proxy process running.${RESET_TERM}";\
@@ -100,13 +83,10 @@ client_start: check_client_link client_check_pid
 stop: client_stop server_stop status
 	@echo "Completed program stop for client and server."
 
-proxy_stop: proxy_check_pid
+server_stop: check_server_pid
 	@echo -n
 
-server_stop: server_check_pid
-	@echo -n
-
-client_stop: client_check_pid
+client_stop: check_client_pid
 	@echo -n
 
 check_links: check_server_link check_client_link
@@ -128,109 +108,10 @@ check_client_link:
 		exit 1;\
 	fi
 
-check_pids: proxy_check_pid server_check_pid client_check_pid
+check_pids: check_server_pid check_client_pid
 	@echo -n
 
-		echo "${BOLD_RED}Found a pre-existing proxy pid file \"${PROXY_PID_FILE}\" with pid `cat ${PROXY_PID_FILE}`.${RESET_TERM}";\
-		echo;\
-		if [ 1 -ne `ps -h --pid ${PROXY_PID} | wc -l` ]; then\
-			echo "${BOLD_RED}Removing file \"${PROXY_PID_FILE}\".${RESET_TERM}";\
-		fi;\
-	fi
-	@if [ 1 -ne "`ps -h --pid ${PROXY_PID} | wc -l`" ]; then\
-		echo "${BOLD_RED}Removing file \"${PROXY_PID_FILE}\".${RESET_TERM}";\
-	fi;\
-
-proxy_check_pid: 
-	@if [ -f ${PROXY_PID_FILE} ] && [ -s ${PROXY_PID_FILE} ]; then\
-		if [ 1 -ne "`cat ${PROXY_PID_FILE} | wc -l`" ]; then\
-			echo;\
-			echo "${BOLD_RED}ERROR: Found a malformed (line count != 1), pre-existing proxy pid file \"${PROXY_PID_FILE}\".${RESET_TERM}";\
-			echo "Make sure no tasks are already running, and clean up the \"${PROXY_PID_FILE}\" pid file.";\
-			echo;\
-			exit 1;\
-		fi;\
-		if [ 1 -ne "`cat ${PROXY_PID_FILE} | wc -w`" ]; then\
-			echo;\
-			echo "${BOLD_RED}ERROR: Found a malformed (word count != 1), pre-existing proxy pid file \"${PROXY_PID_FILE}\".${RESET_TERM}";\
-			echo "Make sure no tasks are already running, and clean up the \"${PROXY_PID_FILE}\" pid file.";\
-			echo;\
-			exit 1;\
-		fi;\
-		echo;\
-		if [ 1 -eq "`ps -ef | grep -v grep | grep proxy | grep ${PROXY_TYPE} | wc -l`" ]; then\
-			echo "${BOLD_RED}Found a pre-existing proxy pid file \"${PROXY_PID_FILE}\" with pid `cat ${PROXY_PID_FILE}`.${RESET_TERM}";\
-			echo;\
-			read -p "Would you like to kill process `ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | awk ' { print $$2 } '` (yes/abort)?" ANSWER;\
-			if [ "$${ANSWER}" = "abort" ]; then\
-				echo;\
-				echo "${BOLD_RED}Aborting make at user request.${RESET_TERM}";\
-				echo;\
-				exit 1;\
-			fi;\
-			if [ "$${ANSWER}" = "yes" ]; then\
-				echo;\
-				echo "${BOLD_RED}Terminating process at user request.${RESET_TERM}";\
-				kill -9 `ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | awk ' { print $$2 } '`;\
-				sleep 1;\
-				echo;\
-			fi;\
-		fi;\
-	elif [ 0 -lt "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | wc -l`" ]; then\
-		echo;\
-		echo "${BOLD_RED}ERROR: Found one or more matching proxy processes with no corresponding pid file(\"${PROXY_PID_FILE}\").${RESET_TERM}";\
-		echo;\
-		ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}";\
-		while [ -n "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}"`" ]; do\
-			echo;\
-			read -p "Would you like to kill process `ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | awk ' { print $$2 } '` (yes/abort)?" ANSWER;\
-			if [ "$${ANSWER}" = "abort" ]; then\
-				echo;\
-				echo "${BOLD_RED}Aborting make at user request.${RESET_TERM}";\
-				echo;\
-				exit 1;\
-			fi;\
-			if [ "$${ANSWER}" = "yes" ]; then\
-				echo;\
-				echo "${BOLD_RED}Terminating process at user request.${RESET_TERM}";\
-				kill -9 `ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | awk ' { print $$2 } '`;\
-				sleep 1;\
-				echo;\
-			fi;\
-		done;\
-	fi
-	@if [ 2 -le "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}" | wc -l`" ]; then\
-		echo;\
-		echo "${BOLD_RED}WARNING: Multiple proxies are running!${RESET_TERM}";\
-		ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}";\
-		echo;\
-		echo "${BOLD_RED}Run \"make proxy_stop\" and terminate superflous proxies before continuing.${RESET_TERM}";\
-		echo;\
-	fi
-	
-#	@echo "Completed proxy_check_pid";
-#		if [ 1 -ne `ps -h --pid ${PROXY_PID} | wc -l` ]; then\
-#			ps -f --pid "${PROXY_PID}";\
-#			echo;\
-#			read -p "Proxy still active.  Would you like to kill the process before proceeding (yes/abort)?" ANSWER;\
-#			echo;\
-#			if [ "$${ANSWER}" = "abort" ]; then\
-#				echo;\
-#				echo "${BOLD_RED}Terminating make at user request.${RESET_TERM}";\
-#				echo;\
-#				exit 1;\
-#			fi;\
-#			if [ "$${ANSWER}" = "yes" ]; then\
-#				echo "${BOLD_RED}Terminating process ${PROXY_PID}".${RESET_TERM}";\
-#				kill ${PROXY_PID};\
-#				sleep 1;\
-#				echo "Process eliminated.";\
-#				echo;\
-#			fi;\
-#			echo "${BOLD_RED}Removing file \"${PROXY_PID_FILE}\".${RESET_TERM}";\
-#		fi;\
-
-server_check_pid: 
+check_server_pid: 
 	@if [ -f ${SERVER_PID_FILE} ] && [ -s ${SERVER_PID_FILE} ]; then\
 		if [ "`cat ${SERVER_PID_FILE} | wc -l`" -ne "1" ]; then\
 		echo;\
@@ -286,13 +167,9 @@ server_check_pid:
 		done;\
 		echo;\
 	fi
-	@echo "Completed server_check_pid";\
+	@echo "Completed check_server_pid";\
 
-
-
-
-
-client_check_pid:
+check_client_pid:
 	@if [ -f "${CLIENT_PID_FILE}" ] && [ -s "${CLIENT_PID_FILE}" ]; then\
 		if [ "`cat "${CLIENT_PID_FILE}" | wc -l`" -ne "1" ]; then\
 		echo;\
@@ -349,29 +226,16 @@ client_check_pid:
 		echo;\
 	fi
 
-# 		echo "Completed client_check_pid";\
+# 		echo "Completed check_client_pid";\
 
 status: title_status server_status client_status 
 
 title_status:
 	@echo;
-	@if [ -n "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}"`"            ] ||\
-	    [ -n "`ps -ef | grep -v grep | grep "${SERVER_EXE_NAME}" | grep "${HOST}" | grep "${PORT}"`" ] ||\
+	@if [ -n "`ps -ef | grep -v grep | grep "${SERVER_EXE_NAME}" | grep "${HOST}" | grep "${PORT}"`" ] ||\
 	    [ -n "`ps -ef | grep -v grep | grep "${CLIENT_EXE_NAME}" | grep "${HOST}" | grep "${PORT}"`" ]; then\
 		echo;\
 		ps -ef | head -1;\
-	fi
-
-proxy_status: proxy_check_pid
-	@if [ -n "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}"`" ]; then\
-		if [ -n "`ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}"`" ]; then\
-			echo;\
-			echo "${BOLD_GREEN}Found Proxy process running.${RESET_TERM}";\
-			ps -ef | grep -v grep | grep proxy | grep "${PROXY_TYPE}";\
-			echo;\
-		fi;\
-	else\
-		echo "${BOLD_GREEN}No Proxy processes were running.${RESET_TERM}";\
 	fi
 
 server_status:
@@ -397,8 +261,3 @@ client_status:
 	else\
 		echo "${BOLD_GREEN}No Client processes were running.${RESET_TERM}";\
 	fi
-
-junk:
-	@echo ROOT_DIR is ${ROOT_DIR}
-	@echo JUNK is ${JUNK}
-

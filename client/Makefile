@@ -14,6 +14,10 @@
 # appdynamics SDK       [ sudo tar xvf                                                        ]
 #
 
+CLIENT_SRC  = client.cpp 
+CLIENT_OBJ  = ${CLIENT_SRC:.cpp=.o}
+CLIENT_INC  = 
+
 # LINUX specific library locations.
 # Ubuntu/Debian                 LIB_DIR = /usr/lib/x86_64-linux-gnu
 # Centos/Redhat/Fedora          LIB_DIR = /usr/lib64
@@ -35,6 +39,7 @@ BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_date_time.a
 BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_timer.a
 BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_chrono.a
 
+
 # GNU
 CCP         = g++
 CPPFLAGS    = -g -std=c++11
@@ -42,18 +47,24 @@ CPPFLAGS    = -g -std=c++11
 # includes
 BOOST_INC   = -I${BOOST_INC_DIR}
 SDK_INC     = -I${SDK_INC_DIR}
+INC         = -I.
 
 # libs
-LDFLAGS     = -lz -lcrypt -lrt
+BOOST_SYS_LIB   = -lboost_system
+LDFLAGS         = -lz -lcrypt -lrt ${BOOST_SYS_LIB}
 
 .PHONY: clean all
 
 all: ${CLIENT_EXE}
 
-${CLIENT_EXE}: client.cpp Makefile
+%.o: %.cpp
+	    @echo building $@
+		    ${CCP} ${CPPFLAGS} ${INC} ${SDK_INC} -c $^
+
+${CLIENT_EXE}: ${CLIENT_SRC} ${CLIENT_INC} ${CLIENT_OBJ} Makefile
 	@echo building ${CLIENT_EXE} 
 	rm -f $@
-	${CCP} ${CPPFLAGS} ${SDK_INC} ${BOOST_INC} $< ${SDK_LIB} ${BOOST_LIBS} ${PTHREAD_LIBS} ${LDFLAGS} -o $@
+	${CCP} ${CPPFLAGS} ${INC} ${SDK_INC} ${BOOST_INC} ${CLIENT_OBJ} ${SDK_LIB} ${BOOST_LIBS} ${PTHREAD_LIBS} ${LDFLAGS} -o $@
 
 clean:
 	rm -f ${CLIENT_EXE}

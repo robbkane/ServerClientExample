@@ -49,9 +49,8 @@ PTHREAD_LIBS    = ${PTHREAD_LIB_DIR}/libpthread.so
 # BOOST files.
 BOOST_ROOT      = /usr/local/boost
 BOOST_INC_DIR   = ${BOOST_ROOT}/include
-BOOST_INC       = -I${BOOST_INC_DIR} -I${BOOST_INC_DIR}/boost/system
+BOOST_LIB_DIR   = ${BOOST_ROOT}/lib
 
-BOOST_LIB_DIR   =  ${BOOST_ROOT}/lib
 BOOST_LIBS      =  ${BOOST_LIB_DIR}/libboost_thread.a
 BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_system.a
 BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_program_options.a
@@ -59,15 +58,19 @@ BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_date_time.a
 BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_timer.a
 BOOST_LIBS      += ${BOOST_LIB_DIR}/libboost_chrono.a
 
-BOOST_SYS_LIB   =  -lboost_system 
 
 # GNU
 CCP         = g++
 CPPFLAGS    = -g -std=c++11
+
+# includes
+BOOST_INC   = -I${BOOST_INC_DIR} -I${BOOST_INC_DIR}/boost/system
+SDK_INC     = -I${SDK_INC_DIR}
 INC         = -I.
 
 # libs
-LDFLAGS     = -lz -lcrypt -lrt
+BOOST_SYS_LIB   = -lboost_system 
+LDFLAGS         = -lz -lcrypt -lrt 
 
 .PHONY: clean
 
@@ -80,7 +83,7 @@ all: ${SERVER_EXE}
 ${SERVER_EXE}: ${SERVER_SRC} ${SERVER_INC} ${SERVER_OBJ} Makefile
 	@echo building $@
 	rm -f $@
-	${CCP} ${CPPFLAGS} ${INC} ${SDK_INC} ${BOOST_INC} ${LDFLAGS} ${SDK_LIB} ${SERVER_OBJ} ${BOOST_LIBS} ${PTHREAD_LIBS} ${BOOST_SYS_LIB} -o $@	
+	${CCP} ${CPPFLAGS} ${INC} ${SDK_INC} ${BOOST_INC} ${LDFLAGS} ${SERVER_OBJ} ${SDK_LIB} ${BOOST_LIBS} ${PTHREAD_LIBS} ${BOOST_SYS_LIB} -o $@	
 
 clean:
 	rm -f ${SERVER_EXE} ${SERVER_OBJ} ${SERVER_GCH}
